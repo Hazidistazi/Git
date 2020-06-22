@@ -5,95 +5,144 @@ import "logic"
 import "pages"
 
 
-App {
-    // You get free licenseKeys from https://felgo.com/licenseKey
-    // With a licenseKey you can:
-    //  * Publish your games & apps for the app stores
-    //  * Remove the Felgo Splash Screen or set a custom one (available with the Pro Licenses)
-    //  * Add plugins to monetize, analyze & improve your apps (available with the Pro Licenses)
-    //licenseKey: "<generate one from https://felgo.com/licenseKey>"
+//App {
+//    // You get free licenseKeys from https://felgo.com/licenseKey
+//    // With a licenseKey you can:
+//    //  * Publish your games & apps for the app stores
+//    //  * Remove the Felgo Splash Screen or set a custom one (available with the Pro Licenses)
+//    //  * Add plugins to monetize, analyze & improve your apps (available with the Pro Licenses)
+//    //licenseKey: "<generate one from https://felgo.com/licenseKey>"
 
-    // app initialization
-    Component.onCompleted: {
-        // if device has network connection, clear cache at startup
-        // you'll probably implement a more intelligent cache cleanup for your app
-        // e.g. to only clear the items that aren't required regularly
-        if(isOnline) {
-            logic.clearCache()
-        }
+//    // app initialization
+//    Component.onCompleted: {
+//        // if device has network connection, clear cache at startup
+//        // you'll probably implement a more intelligent cache cleanup for your app
+//        // e.g. to only clear the items that aren't required regularly
+//        if(isOnline) {
+//            logic.clearCache()
+//        }
 
-        // fetch todo list data
-        logic.fetchTodos()
-        logic.fetchDraftTodos()
-    }
+//        // fetch todo list data
+//        logic.fetchTodos()
+//        logic.fetchDraftTodos()
+//    }
 
-    // business logic
-    Logic {
-        id: logic
-    }
+//    // business logic
+//    Logic {
+//        id: logic
+//    }
 
-    // model
-    DataModel {
-        id: dataModel
-        dispatcher: logic // data model handles actions sent by logic
+//    // model
+//    DataModel {
+//        id: dataModel
+//        dispatcher: logic // data model handles actions sent by logic
 
-        // global error handling
-        onFetchTodosFailed: nativeUtils.displayMessageBox("Unable to load todos", error, 1)
-        onFetchTodoDetailsFailed: nativeUtils.displayMessageBox("Unable to load todo "+id, error, 1)
-        onStoreTodoFailed: nativeUtils.displayMessageBox("Failed to store "+viewHelper.formatTitle(todo))
-    }
+//        // global error handling
+//        onFetchTodosFailed: nativeUtils.displayMessageBox("Unable to load todos", error, 1)
+//        onFetchTodoDetailsFailed: nativeUtils.displayMessageBox("Unable to load todo "+id, error, 1)
+//        onStoreTodoFailed: nativeUtils.displayMessageBox("Failed to store "+viewHelper.formatTitle(todo))
+//    }
 
-    // helper functions for view
-    ViewHelper {
-        id: viewHelper
-    }
+//    // helper functions for view
+//    ViewHelper {
+//        id: viewHelper
+//    }
 
-    // view
-    Navigation {
-        id: navigation
+//    // view
+//    Navigation {
+//        id: navigation
 
-        // only enable if user is logged in
-        // login page below overlays navigation then
-        enabled: dataModel.userLoggedIn
+//        // only enable if user is logged in
+//        // login page below overlays navigation then
+//        enabled: dataModel.userLoggedIn
 
-        // first tab
-        NavigationItem {
-            title: qsTr("Todo List")
-            icon: IconType.list
+//        // first tab
+//        NavigationItem {
+//            title: qsTr("Todo List")
+//            icon: IconType.list
 
-            NavigationStack {
-                splitView: tablet // use side-by-side view on tablets
-                initialPage: TodoListPage { }
+//            NavigationStack {
+//                splitView: tablet // use side-by-side view on tablets
+//                initialPage: TodoListPage { }
+//            }
+//        }
+
+//        // second tab
+//        NavigationItem {
+//            title: qsTr("Profile") // use qsTr for strings you want to translate
+//            icon: IconType.circle
+
+//            NavigationStack {
+//                initialPage: ProfilePage {
+//                    // handle logout
+//                    onLogoutClicked: {
+//                        logic.logout()
+
+//                        // jump to main page after logout
+//                        navigation.currentIndex = 0
+//                        navigation.currentNavigationItem.navigationStack.popAllExceptFirst()
+//                    }
+//                }
+//            }
+//        }
+//    }
+
+//    // login page lies on top of previous items and overlays if user is not logged in
+//    LoginPage {
+//        visible: opacity > 0
+//        enabled: visible
+//        opacity: dataModel.userLoggedIn ? 0 : 1 // hide if user is logged in
+
+//        Behavior on opacity { NumberAnimation { duration: 250 } } // page fade in/out
+//    }
+
+//}
+import QtQuick 2.9
+import QtQuick.Window 2.11
+import QtQuick.Controls 2.4
+
+ApplicationWindow {
+    id:root
+    visible: true
+    width: 640
+    height: 480
+    title: qsTr("Album")
+
+    Shortcut{
+        sequences: ["Esc","Back"]
+        onActivated: {
+            console.log("--->>Shortcur<<---")
+            if(stackView.depth > 1){
+                stackView.pop()
             }
-        }
-
-        // second tab
-        NavigationItem {
-            title: qsTr("Profile") // use qsTr for strings you want to translate
-            icon: IconType.circle
-
-            NavigationStack {
-                initialPage: ProfilePage {
-                    // handle logout
-                    onLogoutClicked: {
-                        logic.logout()
-
-                        // jump to main page after logout
-                        navigation.currentIndex = 0
-                        navigation.currentNavigationItem.navigationStack.popAllExceptFirst()
-                    }
-                }
+            else{
+                root.visible = false
+                Qt.quit()
             }
+
         }
     }
 
-    // login page lies on top of previous items and overlays if user is not logged in
-    LoginPage {
-        visible: opacity > 0
-        enabled: visible
-        opacity: dataModel.userLoggedIn ? 0 : 1 // hide if user is logged in
-
-        Behavior on opacity { NumberAnimation { duration: 250 } } // page fade in/out
+    Connections{
+        target: dataManager
+        onAddDirModelData:{
+            console.log("name = ",name,"url = " ,url,
+                        "num = ",num,"firstPath = ",firstPath)
+            addDirectoryData(name,url,num,firstPath)
+        }
     }
 
+    StackView{
+        id:stackView
+        anchors.fill: parent
+        initialItem: AlbumListPage{}
+    }
+
+    ListModel{
+        id:albumListModel
+    }
+
+    function addDirectoryData(name,url,num,firstPath){
+        albumListModel.append({"directoryName":name,"directoryUrl":url,"PhotoNum":num,"fistImagePath":firstPath})
+    }
 }

@@ -38,7 +38,8 @@ RESOURCES += #    resources.qrc # uncomment for publishing
 
 
 # The .cpp file which was generated for your project. Feel free to hack it.
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    datamanager.cpp
 
 
 android {
@@ -58,3 +59,8 @@ win32 {
 macx {
     ICON = macx/app_icon.icns
 }
+
+HEADERS += \
+    albuminfo.h \
+    androidjniinterface.h \
+    datamanager.h

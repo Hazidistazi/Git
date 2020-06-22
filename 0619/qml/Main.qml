@@ -10,15 +10,16 @@ App {
     //licenseKey: "<generate one from https://felgo.com/licenseKey>"
 
     NavigationStack {
-
+//        width:  1000
+//        height: 6400
         Page {
-            title: qsTr("Main Page")
+            title: qsTr("Album")
 
             Image {
                 source: "../assets/felgo-logo.png"
                 anchors.centerIn: parent
             }
         }
-
     }
+
 }
